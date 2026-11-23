@@ -1,0 +1,30 @@
+# Source and full-size data stay out of Git. Only data/sample/ is published.
+data/*
+!data/sample/
+!data/sample/*.csv
+*.xlsx
+*.parquet
+
+# Anonymization secrets and mappings
+private_do_not_commit/
+*secrets*.json
+.env
+.databrickscfg
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Notebooks and editors
+.ipynb_checkpoints/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Databricks and MLflow local state
+.databricks/
+mlruns/
