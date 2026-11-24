@@ -75,6 +75,14 @@ JOIN workspace.gold.dim_fleet f ON s.fleet_name = f.fleet_name;
 
 -- COMMAND ----------
 
+-- Tracking columns used by the MERGE refresh in notebook 08
+ALTER TABLE workspace.gold.fact_deliveries ADD COLUMNS (
+  _row_hash STRING COMMENT 'SHA-256 of the business columns, used by MERGE to detect changes',
+  _gold_updated_at TIMESTAMP COMMENT 'When MERGE last inserted or updated this row'
+);
+
+-- COMMAND ----------
+
 SELECT
   COUNT(*) AS fact_rows,
   COUNT(DISTINCT delivery_key) AS unique_keys,

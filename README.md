@@ -40,6 +40,17 @@ Built on Databricks Free Edition with serverless SQL. Every step is a SQL notebo
 | [`06_gold_kpis.sql`](sql/06_gold_kpis.sql) | Ten KPI tables for reporting |
 | [`07_data_tests.sql`](sql/07_data_tests.sql) | 24 checks written to a results table on every run |
 | [`08_gold_incremental_merge.sql`](sql/08_gold_incremental_merge.sql) | Refresh dimensions and the fact table in place with `MERGE`, using a row hash to skip unchanged rows |
+### Scheduled Workflow
+
+A Databricks Job, `food_delivery_pipeline`, runs the pipeline on serverless compute as a chain of six notebook tasks:
+
+```
+bronze_ingestion → silver_dedup → silver_clean → gold_merge → gold_kpis → data_tests
+  (01)               (02)            (03)           (08)         (06)        (07)
+```
+
+Every task is safe to rerun. `COPY INTO` skips files it has already loaded, Silver and the KPI tables are rebuilt, and the fact table is updated with `MERGE`. The last cell of `07_data_tests.sql` calls `assert_true`, so a failed data test turns the job red instead of passing silently.
+
 Notebook `05` builds the fact table from scratch. After that, `08` keeps it current: it inserts new deliveries, updates changed ones, deletes removed ones, and leaves unchanged rows alone. Running it twice in a row changes 0 rows the second time.
 
 ## Data and anonymization
@@ -103,7 +114,7 @@ The Power BI report connects to the Gold tables through the Databricks connector
 2. In Databricks, import the files in `sql/` as notebooks and run `00_setup.sql`.
 3. Upload `data/anonymized/deliveries_anonymized.csv` to `/Volumes/workspace/bronze/landing/`.
 4. Run notebooks `01` to `07` in order. The last cells of `07_data_tests.sql` should show 0 failed tests.
-5. Run `08` (cell 1 only the first time). On later loads, run `01` to `03`, then `08`, `06`, and `07`.
+5. Create a Databricks Job that runs `01`, `02`, `03`, `08`, `06`, and `07` in that order, each task depending on the one before. Later loads only need a new file in the landing volume and a job run.
 6. In Power BI Desktop, connect to the Gold tables with the Databricks connector, rename the tables to their short names, and add the measures from `powerbi/measures.dax`.
 
 ## Roadmap
@@ -115,4 +126,4 @@ The Power BI report connects to the Gold tables through the Databricks connector
 - [x] Data tests with stored history
 - [x] Power BI dashboard
 - [x] Incremental Gold refresh with `MERGE`
-- [ ] Databricks Workflow to run the pipeline on a schedule
+- [x] Databricks Workflow that runs the pipeline as a chain of tasks

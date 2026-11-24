@@ -141,3 +141,14 @@ SELECT
 FROM workspace.gold.data_test_results
 GROUP BY test_run_id
 ORDER BY test_run_id DESC;
+
+-- COMMAND ----------
+
+-- Stop the job if any test in the latest run failed. assert_true raises an error,
+-- so the Workflow task turns red and later tasks don't run.
+SELECT assert_true(
+  COUNT_IF(status = 'FAIL') = 0,
+  'One or more data tests failed. Check gold.data_test_results for the latest test_run_id.'
+) AS all_tests_passed
+FROM workspace.gold.data_test_results
+WHERE test_run_id = (SELECT MAX(test_run_id) FROM workspace.gold.data_test_results);

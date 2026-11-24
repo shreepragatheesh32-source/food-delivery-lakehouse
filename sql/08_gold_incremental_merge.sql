@@ -11,19 +11,11 @@
 -- MAGIC
 -- MAGIC `run_size` and `active_orders_at_assignment` depend on other deliveries, so the source recalculates every row and the hash decides what to write. At this data size that's cheap, and it keeps the window logic correct.
 -- MAGIC
--- MAGIC Run cell 1 once. After that, run cells 2 to 4 every time Silver changes. KPI tables are small aggregates, so rerun notebook `06` after this one to rebuild them.
+-- MAGIC The `_row_hash` and `_gold_updated_at` columns are created in notebook `05`. This notebook is safe to rerun, so the scheduled job runs it after every Silver refresh. KPI tables are small aggregates, so notebook `06` rebuilds them after this one.
 
 -- COMMAND ----------
 
--- Cell 1 (one-time setup): tracking columns for the fact table
-ALTER TABLE workspace.gold.fact_deliveries ADD COLUMNS (
-  _row_hash STRING COMMENT 'SHA-256 of the business columns, used by MERGE to detect changes',
-  _gold_updated_at TIMESTAMP COMMENT 'When MERGE last inserted or updated this row'
-);
-
--- COMMAND ----------
-
--- Cell 2: add new drivers and fleets to the dimensions
+-- Cell 1: add new drivers and fleets to the dimensions
 MERGE INTO workspace.gold.dim_driver t
 USING (SELECT DISTINCT xxhash64(driver_name) AS driver_key, driver_name FROM workspace.silver.deliveries) s
 ON t.driver_key = s.driver_key
@@ -36,7 +28,7 @@ WHEN NOT MATCHED THEN INSERT *;
 
 -- COMMAND ----------
 
--- Cell 3: build the source rows and merge them into the fact table
+-- Cell 2: build the source rows and merge them into the fact table
 CREATE OR REPLACE TEMP VIEW fact_source AS
 SELECT
   *,
@@ -117,7 +109,7 @@ WHEN NOT MATCHED BY SOURCE THEN DELETE;
 
 -- COMMAND ----------
 
--- Cell 4: what the last two MERGE runs on the fact table changed
+-- Cell 3: what the last two MERGE runs on the fact table changed
 SELECT
   version,
   timestamp,
