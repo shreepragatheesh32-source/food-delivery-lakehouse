@@ -115,5 +115,4 @@ The Power BI report connects to the Gold tables through the Databricks connector
 - [x] Data tests with stored history
 - [x] Power BI dashboard
 - [x] Incremental Gold refresh with `MERGE`
-- [ ] Delivery time model with MLflow, using a time-based split
 - [ ] Databricks Workflow to run the pipeline on a schedule
