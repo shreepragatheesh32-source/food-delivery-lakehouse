@@ -42,7 +42,7 @@ Built on Databricks Free Edition with serverless SQL. Every step is a SQL notebo
 | [`08_gold_incremental_merge.sql`](sql/08_gold_incremental_merge.sql) | Refresh dimensions and the fact table in place with `MERGE`, using a row hash to skip unchanged rows |
 ### Scheduled Workflow
 
-A Databricks Job, `food_delivery_pipeline`, runs the pipeline on serverless compute as a chain of six notebook tasks:
+A Databricks Job, `food_delivery_pipeline`, runs the pipeline daily on serverless compute as a chain of six notebook tasks:
 
 ```
 bronze_ingestion → silver_dedup → silver_clean → gold_merge → gold_kpis → data_tests
@@ -126,4 +126,4 @@ The Power BI report connects to the Gold tables through the Databricks connector
 - [x] Data tests with stored history
 - [x] Power BI dashboard
 - [x] Incremental Gold refresh with `MERGE`
-- [x] Databricks Workflow that runs the pipeline as a chain of tasks
+- [x] Databricks Workflow that runs the pipeline daily as a chain of tasks
