@@ -25,6 +25,10 @@ venv/
 .DS_Store
 Thumbs.db
 
+# Power BI files embed the full imported dataset, so they stay out of Git.
+*.pbix
+*.pbit
+
 # Databricks and MLflow local state
 .databricks/
 mlruns/

@@ -1,0 +1,33 @@
+// DAX measures in the _Measures table of food_delivery_dashboard.pbix.
+// Every measure except Total Deliveries is limited to valid deliveries
+// (fact_deliveries[is_valid_for_analysis] = TRUE).
+// Expected values: 937 total, 922 valid, 36 late, 96.10% on time.
+
+Total Deliveries = COUNTROWS(fact_deliveries)
+
+Valid Deliveries = CALCULATE(COUNTROWS(fact_deliveries), fact_deliveries[is_valid_for_analysis] = TRUE())
+
+Late Deliveries = CALCULATE([Valid Deliveries], fact_deliveries[is_late] = TRUE())
+
+On-Time % = DIVIDE([Valid Deliveries] - [Late Deliveries], [Valid Deliveries])
+
+Early Deliveries = CALCULATE([Valid Deliveries], fact_deliveries[delivery_outcome] = "Early")
+
+In Window Deliveries = CALCULATE([Valid Deliveries], fact_deliveries[delivery_outcome] = "In Window")
+
+// Arrived within the last 5 minutes before the promise deadline.
+At-Risk Deliveries = CALCULATE([Valid Deliveries], fact_deliveries[minutes_vs_promise] >= -5, fact_deliveries[minutes_vs_promise] <= 0)
+
+Avg Delivery Min = CALCULATE(AVERAGE(fact_deliveries[dispatch_to_door_min]), fact_deliveries[is_valid_for_analysis] = TRUE())
+
+Median Delivery Min = CALCULATE(MEDIAN(fact_deliveries[dispatch_to_door_min]), fact_deliveries[is_valid_for_analysis] = TRUE())
+
+P90 Delivery Min = CALCULATE(PERCENTILE.INC(fact_deliveries[dispatch_to_door_min], 0.9), fact_deliveries[is_valid_for_analysis] = TRUE())
+
+Batched % = DIVIDE(CALCULATE([Valid Deliveries], fact_deliveries[run_size] > 1), [Valid Deliveries])
+
+Avg Active Orders = CALCULATE(AVERAGE(fact_deliveries[active_orders_at_assignment]), fact_deliveries[is_valid_for_analysis] = TRUE())
+
+Active Drivers = CALCULATE(DISTINCTCOUNT(fact_deliveries[driver_key]), fact_deliveries[is_valid_for_analysis] = TRUE())
+
+Deliveries per Driver = DIVIDE([Valid Deliveries], [Active Drivers])
